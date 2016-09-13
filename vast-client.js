@@ -58,10 +58,8 @@ EventEmitter.prototype.emit = function(type) {
       er = arguments[1];
       if (er instanceof Error) {
         throw er; // Unhandled 'error' event
-      } else {
-        throw TypeError('Uncaught, unspecified "error" event.');
       }
-      return false;
+      throw TypeError('Uncaught, unspecified "error" event.');
     }
   }
 
@@ -310,6 +308,7 @@ var VASTAd;
 VASTAd = (function() {
   function VASTAd() {
     this.id = null;
+    this.sequence = null;
     this.errorURLTemplates = [];
     this.impressionURLTemplates = [];
     this.creatives = [];
@@ -862,6 +861,7 @@ VASTParser = (function() {
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       adTypeElement = _ref[_i];
       adTypeElement.id = adElement.getAttribute("id");
+      adTypeElement.sequence = adElement.getAttribute("sequence");
       if (adTypeElement.nodeName === "Wrapper") {
         return this.parseWrapperElement(adTypeElement);
       } else if (adTypeElement.nodeName === "InLine") {
@@ -907,6 +907,7 @@ VASTParser = (function() {
     var ad, creative, creativeElement, creativeTypeElement, node, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
     ad = new VASTAd();
     ad.id = inLineElement.id;
+    ad.sequence = inLineElement.sequence;
     _ref = inLineElement.childNodes;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       node = _ref[_i];

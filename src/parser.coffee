@@ -165,6 +165,7 @@ class VASTParser
     @parseAdElement: (adElement) ->
         for adTypeElement in adElement.childNodes
             adTypeElement.id = adElement.getAttribute("id")
+            adTypeElement.sequence = adElement.getAttribute("sequence")
             if adTypeElement.nodeName is "Wrapper"
                 return @parseWrapperElement adTypeElement
             else if adTypeElement.nodeName is "InLine"
@@ -197,6 +198,7 @@ class VASTParser
     @parseInLineElement: (inLineElement) ->
         ad = new VASTAd()
         ad.id = inLineElement.id
+        ad.sequence = inLineElement.sequence
 
         for node in inLineElement.childNodes
             switch node.nodeName
