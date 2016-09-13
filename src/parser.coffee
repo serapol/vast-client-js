@@ -109,6 +109,7 @@ class VASTParser
                         baseURL = url.slice(0, url.lastIndexOf('/'))
                         ad.nextWrapperURL = "#{baseURL}/#{ad.nextWrapperURL}"
 
+                    options.response = null;
                     @_parse ad.nextWrapperURL, parentURLs, options, (err, wrappedResponse) =>
                         errorAlreadyRaised = false
                         if err?
