@@ -206,13 +206,13 @@ class VASTParser
         for node in inLineElement.childNodes
             switch node.nodeName
                 when "AdSystem"
-                    ad.adSystem.push (@parseNodeText node)
+                    ad.adSystem = @parseNodeText node
 
                 when "AdTitle"
-                    ad.adTitle.push (@parseNodeText node)
+                    ad.adTitle = @parseNodeText node
 
                 when "Description"
-                    ad.description.push (@parseNodeText node)
+                    ad.description = @parseNodeText node
 
                 when "Error"
                     ad.errorURLTemplates.push (@parseNodeText node)

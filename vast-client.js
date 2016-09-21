@@ -917,13 +917,13 @@ VASTParser = (function() {
       node = _ref[_i];
       switch (node.nodeName) {
         case "AdSystem":
-          ad.adSystem.push(this.parseNodeText(node));
+          ad.adSystem = this.parseNodeText(node);
           break;
         case "AdTitle":
-          ad.adTitle.push(this.parseNodeText(node));
+          ad.adTitle = this.parseNodeText(node);
           break;
         case "Description":
-          ad.description.push(this.parseNodeText(node));
+          ad.description = this.parseNodeText(node);
           break;
         case "Error":
           ad.errorURLTemplates.push(this.parseNodeText(node));
