@@ -866,9 +866,6 @@ VASTParser = (function() {
       }
       adTypeElement.setAttribute("id", adElement.getAttribute("id"));
       adTypeElement.setAttribute("sequence", adElement.getAttribute("sequence"));
-      adTypeElement.setAttribute("adSystem", adElement.getAttribute("adSystem"));
-      adTypeElement.setAttribute("adTitle", adElement.getAttribute("adTitle"));
-      adTypeElement.setAttribute("description", adElement.getAttribute("description"));
       if (adTypeElement.nodeName === "Wrapper") {
         return this.parseWrapperElement(adTypeElement);
       } else if (adTypeElement.nodeName === "InLine") {
@@ -915,13 +912,19 @@ VASTParser = (function() {
     ad = new VASTAd();
     ad.id = inLineElement.id;
     ad.sequence = inLineElement.sequence;
-    ad.adSystem = inLineElement.adSystem;
-    ad.adTitle = inLineElement.adTitle;
-    ad.description = inLineElement.description;
     _ref = inLineElement.childNodes;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       node = _ref[_i];
       switch (node.nodeName) {
+        case "AdSystem":
+          ad.adSystem.push(this.parseNodeText(node));
+          break;
+        case "AdTitle":
+          ad.adTitle.push(this.parseNodeText(node));
+          break;
+        case "Description":
+          ad.description.push(this.parseNodeText(node));
+          break;
         case "Error":
           ad.errorURLTemplates.push(this.parseNodeText(node));
           break;
