@@ -857,12 +857,18 @@ VASTParser = (function() {
   };
 
   VASTParser.parseAdElement = function(adElement) {
-    var adTypeElement, _i, _len, _ref;
+    var adTypeElement, _i, _len, _ref, _ref1;
     _ref = adElement.childNodes;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       adTypeElement = _ref[_i];
-      adTypeElement.id = adElement.getAttribute("id");
-      adTypeElement.sequence = adElement.getAttribute("sequence");
+      if ((_ref1 = adTypeElement.nodeName) !== "Wrapper" && _ref1 !== "InLine") {
+        continue;
+      }
+      adTypeElement.setAttribute("id", adElement.getAttribute("id"));
+      adTypeElement.setAttribute("sequence", adElement.getAttribute("sequence"));
+      adTypeElement.setAttribute("adSystem", adElement.getAttribute("adSystem"));
+      adTypeElement.setAttribute("adTitle", adElement.getAttribute("adTitle"));
+      adTypeElement.setAttribute("description", adElement.getAttribute("description"));
       if (adTypeElement.nodeName === "Wrapper") {
         return this.parseWrapperElement(adTypeElement);
       } else if (adTypeElement.nodeName === "InLine") {
@@ -909,6 +915,9 @@ VASTParser = (function() {
     ad = new VASTAd();
     ad.id = inLineElement.id;
     ad.sequence = inLineElement.sequence;
+    ad.adSystem = inLineElement.adSystem;
+    ad.adTitle = inLineElement.adTitle;
+    ad.description = inLineElement.description;
     _ref = inLineElement.childNodes;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       node = _ref[_i];
@@ -1582,12 +1591,12 @@ XHRURLHandler = (function() {
       xhr.timeout = options.timeout || 0;
       xhr.withCredentials = options.withCredentials || false;
       xhr.overrideMimeType('text/xml');
-      xhr.send();
-      return xhr.onreadystatechange = function() {
+      xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
           return cb(null, xhr.responseXML);
         }
       };
+      return xhr.send();
     } catch (_error) {
       return cb();
     }
