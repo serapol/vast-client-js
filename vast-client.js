@@ -366,16 +366,16 @@ VASTClient = (function() {
       this.totalCalls++;
     }
     if (this.cappingFreeLunch >= this.totalCalls) {
-      cb(null);
+      cb(null, new Error("VAST call canceled – FreeLunch capping not reached yet " + this.totalCalls + "/" + this.cappingFreeLunch));
       return;
     }
     if (now - this.lastSuccessfullAd < this.cappingMinimumTimeInterval) {
-      cb(null);
+      cb(null, new Error("VAST call canceled – (" + this.cappingMinimumTimeInterval + ")ms minimum interval reached"));
       return;
     }
     return VASTParser.parse(url, options, (function(_this) {
-      return function(response) {
-        return cb(response);
+      return function(response, err) {
+        return cb(response, err);
       };
     })(this));
   };
@@ -657,7 +657,7 @@ VASTParser = (function() {
       options = {};
     }
     return this._parse(url, null, options, function(err, response) {
-      return cb(response);
+      return cb(response, err);
     });
   };
 
@@ -700,7 +700,7 @@ VASTParser = (function() {
         }
         response = new VASTResponse();
         if (!(((xml != null ? xml.documentElement : void 0) != null) && xml.documentElement.nodeName === "VAST")) {
-          return cb();
+          return cb(new Error('Invalid VAST XMLDocument'));
         }
         _ref = xml.documentElement.childNodes;
         for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
@@ -724,26 +724,32 @@ VASTParser = (function() {
           }
         }
         complete = function(errorAlreadyRaised) {
-          var _l, _len3, _ref2;
+          var noCreatives, _l, _len3, _ref2;
           if (errorAlreadyRaised == null) {
             errorAlreadyRaised = false;
           }
           if (!response) {
             return;
           }
+          noCreatives = true;
           _ref2 = response.ads;
           for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
             ad = _ref2[_l];
             if (ad.nextWrapperURL != null) {
               return;
             }
+            if (ad.creatives.length > 0) {
+              noCreatives = false;
+            }
           }
-          if (response.ads.length === 0) {
+          if (noCreatives) {
             if (!errorAlreadyRaised) {
               _this.track(response.errorURLTemplates, {
                 ERRORCODE: 303
               });
             }
+          }
+          if (response.ads.length === 0) {
             response = null;
           }
           return cb(null, response);
@@ -1510,7 +1516,7 @@ URLHandler = (function() {
     } else if (flash.supported()) {
       return flash.get(url, options, cb);
     } else {
-      return cb();
+      return cb(new Error('Current context is not supported by any of the default URLHandlers. Please provide a custom URLHandler'));
     }
   };
 
@@ -1544,7 +1550,7 @@ FlashURLHandler = (function() {
     if (xmlDocument = typeof window.ActiveXObject === "function" ? new window.ActiveXObject("Microsoft.XMLDOM") : void 0) {
       xmlDocument.async = false;
     } else {
-      return cb();
+      return cb(new Error('FlashURLHandler: Microsoft.XMLDOM format not supported'));
     }
     xdr = this.xdr();
     xdr.open('GET', url);
@@ -1586,22 +1592,24 @@ XHRURLHandler = (function() {
   XHRURLHandler.get = function(url, options, cb) {
     var xhr;
     if (window.location.protocol === 'https:' && url.indexOf('http://') === 0) {
-      return cb(new Error('Cannot go from HTTPS to HTTP.'));
+      return cb(new Error('XHRURLHandler: Cannot go from HTTPS to HTTP.'));
     }
     try {
       xhr = this.xhr();
       xhr.open('GET', url);
       xhr.timeout = options.timeout || 0;
       xhr.withCredentials = options.withCredentials || false;
-      xhr.overrideMimeType('text/xml');
+      xhr.overrideMimeType && xhr.overrideMimeType('text/xml');
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
           return cb(null, xhr.responseXML);
+        } else {
+          return cb(new Error("XHRURLHandler: " + xhr.statusText));
         }
       };
       return xhr.send();
     } catch (_error) {
-      return cb();
+      return cb(new Error('XHRURLHandler: Unexpected error'));
     }
   };
 

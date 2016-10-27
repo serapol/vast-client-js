@@ -29,7 +29,7 @@ class VASTParser
             options = {}
 
         @_parse url, null, options, (err, response) ->
-            cb(response)
+            cb(response, err)
 
     @vent = new EventEmitter()
     @track: (templates, errorCode) ->
@@ -60,7 +60,7 @@ class VASTParser
             response = new VASTResponse()
 
             unless xml?.documentElement? and xml.documentElement.nodeName is "VAST"
-                return cb()
+                return cb(new Error('Invalid VAST XMLDocument'))
 
             for node in xml.documentElement.childNodes
                 if node.nodeName is 'Error'
@@ -77,14 +77,18 @@ class VASTParser
 
             complete = (errorAlreadyRaised = false) =>
                 return unless response
+                noCreatives = true
                 for ad in response.ads
                     return if ad.nextWrapperURL?
-                if response.ads.length == 0
+                    if ad.creatives.length > 0
+                        noCreatives = false
+                if noCreatives
                     # No Ad Response
                     # The VAST <Error> element is optional but if included, the video player must send a request to the URI
                     # provided when the VAST response returns an empty InLine response after a chain of one or more wrapper ads.
                     # If an [ERRORCODE] macro is included, the video player should substitute with error code 303.
                     @track(response.errorURLTemplates, ERRORCODE: 303) unless errorAlreadyRaised
+                if response.ads.length == 0
                     response = null
                 cb(null, response)
 
